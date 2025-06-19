@@ -1,0 +1,187 @@
+import React from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+// Datos ficticios para el reporte de Google Ads de Arquitectoma a lo largo de los meses.
+// Estos datos simulan un crecimiento y optimización continuos.
+const data = [
+  { name: 'Ene 2025', inversion: 2500, impresiones: 600000, clics: 18000, ctr: 3.00, cpc: 0.14, conversiones: 200, cpa: 12.50, tasaConversion: 1.11 },
+  { name: 'Feb 2025', inversion: 2600, impresiones: 650000, clics: 20000, ctr: 3.08, cpc: 0.13, conversiones: 230, cpa: 11.30, tasaConversion: 1.15 },
+  { name: 'Mar 2025', inversion: 2800, impresiones: 700000, clics: 22000, ctr: 3.14, cpc: 0.12, conversiones: 260, cpa: 10.77, tasaConversion: 1.18 },
+  { name: 'Abr 2025', inversion: 2900, impresiones: 750000, clics: 24000, ctr: 3.20, cpc: 0.12, conversiones: 280, cpa: 10.36, tasaConversion: 1.17 },
+  { name: 'May 2025', inversion: 3000, impresiones: 780000, clics: 25000, ctr: 3.21, cpc: 0.12, conversiones: 300, cpa: 10.00, tasaConversion: 1.20 },
+  { name: 'Jun 2025', inversion: 3200, impresiones: 850000, clics: 28900, ctr: 3.40, cpc: 0.11, conversiones: 380, cpa: 8.42, tasaConversion: 1.31 },
+];
+
+function App() {
+  // Obtiene los datos del último y penúltimo mes para el resumen
+  const latestMonthData = data[data.length - 1];
+  const previousMonthData = data[data.length - 2];
+
+  // Función para calcular la variación porcentual entre dos valores
+  const calculateChange = (current, previous) => {
+    if (previous === 0) return 'N/A'; // Evita división por cero
+    const change = ((current - previous) / previous) * 100;
+    return `${change > 0 ? '+' : ''}${change.toFixed(1)}%`;
+  };
+
+  return (
+    // Contenedor principal de la aplicación con estilos Tailwind CSS para responsividad
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-sans">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-xl p-6 sm:p-8">
+        {/* Título del Reporte */}
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+          Reporte Mensual de Google Ads: Arquitectoma
+        </h1>
+        {/* Subtítulo descriptivo */}
+        <p className="text-lg text-gray-600 text-center mb-8">
+          Análisis del progreso de tus campañas en el tiempo, con un enfoque en las tendencias mes a mes.
+        </p>
+
+        {/* Resumen del Último Mes */}
+        {latestMonthData && previousMonthData && (
+          <div className="mb-10 p-6 bg-blue-50 rounded-lg shadow-inner">
+            <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+              Resumen del Último Mes: {latestMonthData.name}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[
+                { label: 'Inversión Total', value: latestMonthData.inversion, prev: previousMonthData.inversion, format: (val) => `$${val.toLocaleString()}` },
+                { label: 'Impresiones', value: latestMonthData.impresiones, prev: previousMonthData.impresiones, format: (val) => val.toLocaleString() },
+                { label: 'Clics', value: latestMonthData.clics, prev: previousMonthData.clics, format: (val) => val.toLocaleString() },
+                { label: 'CTR', value: latestMonthData.ctr, prev: previousMonthData.ctr, format: (val) => `${val.toFixed(2)}%` },
+                { label: 'Costo Promedio por Clic (CPC)', value: latestMonthData.cpc, prev: previousMonthData.cpc, format: (val) => `$${val.toFixed(2)}` },
+                { label: 'Conversiones (Leads)', value: latestMonthData.conversiones, prev: previousMonthData.conversiones, format: (val) => val.toLocaleString() },
+                { label: 'CPA', value: latestMonthData.cpa, prev: previousMonthData.cpa, format: (val) => `$${val.toFixed(2)}` },
+                { label: 'Tasa de Conversión', value: latestMonthData.tasaConversion, prev: previousMonthData.tasaConversion, format: (val) => `${val.toFixed(2)}%` },
+              ].map((metric, index) => (
+                <div key={index} className="bg-white p-4 rounded-md shadow-sm">
+                  <p className="text-sm font-medium text-gray-500">{metric.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{metric.format(metric.value)}</p>
+                  {metric.prev !== undefined && (
+                    <p className={`text-sm ${parseFloat(calculateChange(metric.value, metric.prev)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      vs. Mes Anterior: {calculateChange(metric.value, metric.prev)}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sección de Gráficos Interactivos */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Progreso de Campañas a lo Largo del Tiempo
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Gráfico de Inversión y Conversiones */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">Inversión y Conversiones (Leads)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="name" tick={{ fill: '#4a5568' }} />
+                  {/* Eje Y para Inversión (izquierda) */}
+                  <YAxis yAxisId="left" orientation="left" stroke="#8884d8" tickFormatter={(value) => `$${value.toLocaleString()}`} />
+                  {/* Eje Y para Conversiones (derecha) */}
+                  <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" tickFormatter={(value) => value.toLocaleString()} />
+                  <Tooltip formatter={(value, name) => {
+                    if (name === 'inversion') return [`$${value.toLocaleString()}`, 'Inversión'];
+                    if (name === 'conversiones') return [value.toLocaleString(), 'Conversiones (Leads)'];
+                    return value;
+                  }} />
+                  <Legend />
+                  <Line yAxisId="left" type="monotone" dataKey="inversion" name="Inversión" stroke="#8884d8" activeDot={{ r: 8 }} strokeWidth={2} />
+                  <Line yAxisId="right" type="monotone" dataKey="conversiones" name="Conversiones (Leads)" stroke="#82ca9d" activeDot={{ r: 8 }} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Gráfico de CPA */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">Costo por Conversión (CPA)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="name" tick={{ fill: '#4a5568' }} />
+                  <YAxis tickFormatter={(value) => `$${value.toFixed(2)}`} tick={{ fill: '#4a5568' }} />
+                  <Tooltip formatter={(value, name) => [`$${value.toFixed(2)}`, 'CPA']} />
+                  <Legend />
+                  <Line type="monotone" dataKey="cpa" name="CPA" stroke="#ffc658" activeDot={{ r: 8 }} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Gráfico de CTR y Tasa de Conversión */}
+            <div className="bg-white p-4 rounded-lg shadow-md lg:col-span-2">
+              <h3 className="text-xl font-semibold text-gray-700 mb-4 text-center">CTR y Tasa de Conversión</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="name" tick={{ fill: '#4a5568' }} />
+                  {/* Eje Y para CTR (izquierda) */}
+                  <YAxis yAxisId="left" orientation="left" stroke="#d884d8" tickFormatter={(value) => `${value.toFixed(2)}%`} />
+                  {/* Eje Y para Tasa de Conversión (derecha) */}
+                  <YAxis yAxisId="right" orientation="right" stroke="#83a6ed" tickFormatter={(value) => `${value.toFixed(2)}%`} />
+                  <Tooltip formatter={(value, name) => {
+                    if (name === 'ctr') return [`${value.toFixed(2)}%`, 'CTR'];
+                    if (name === 'tasaConversion') return [`${value.toFixed(2)}%`, 'Tasa de Conversión'];
+                    return value;
+                  }} />
+                  <Legend />
+                  <Line yAxisId="left" type="monotone" dataKey="ctr" name="CTR" stroke="#d884d8" activeDot={{ r: 8 }} strokeWidth={2} />
+                  <Line yAxisId="right" type="monotone" dataKey="tasaConversion" name="Tasa de Conversión" stroke="#83a6ed" activeDot={{ r: 8 }} strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabla de Datos Históricos */}
+        <div className="mb-10 overflow-x-auto rounded-lg shadow-md">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Histórico Mensual de Métricas Clave
+          </h2>
+          <table className="min-w-full bg-white border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600 rounded-tl-lg">Mes</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Inversión</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Impresiones</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Clics</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">CTR</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">CPC</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Conversiones</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">CPA</th>
+                <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600 rounded-tr-lg">Tasa Conversión</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((month, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{month.name}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">${month.inversion.toLocaleString()}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{month.impresiones.toLocaleString()}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{month.clics.toLocaleString()}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{month.ctr.toFixed(2)}%</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">${month.cpc.toFixed(2)}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{month.conversiones.toLocaleString()}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">${month.cpa.toFixed(2)}</td>
+                  <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{month.tasaConversion.toFixed(2)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Conclusión del Reporte */}
+        <p className="text-center text-gray-600 text-md mt-10">
+          Este reporte interactivo te permite visualizar el progreso de tus campañas de Google Ads mes a mes. Puedes observar las tendencias en métricas clave como la inversión, conversiones y costo por adquisición, facilitando la toma de decisiones estratégicas y la identificación de áreas de oportunidad para Arquitectoma.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default App;

@@ -1,0 +1,206 @@
+import React from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+
+// Real data processed from user's CSVs (Jan-May 2025)
+// Note: Conversions are 0.0 in the provided search queries data.
+const summaryData = {
+    name: 'Ene-May 2025',
+    inversion: 24469.54, // Total Coste from Búsquedas(Buscar)
+    impresiones: 27022.0, // Total Impresiones from Búsquedas(Buscar)
+    clics: 3541.0,      // Total Clics from Búsquedas(Buscar)
+    ctr: 13.10,          // (Clicks / Impressions) * 100
+    cpc: 6.91,           // Coste / Clics
+    conversiones: 0.0,   // Total Conversiones from Búsquedas(Buscar)
+    cpa: 0,             // Will be handled as N/A if conversions are 0
+    tasaConversion: 0.0  // (Conversiones / Clics) * 100
+};
+
+const campaignData = [
+  { name: 'Sepia-Search', coste: 75040.44, clics: 11111, ctr: 14.86, conversiones: 0 },
+  { name: 'The Ritz-Carlton Res - CDMX', coste: 46015.67, clics: 9197, ctr: 15.74, conversiones: 0 },
+  { name: 'RP19-Search', coste: 41510.63, clics: 6795, ctr: 22.96, conversiones: 0 },
+  { name: 'Máxica-Search', coste: 25721.47, clics: 3025, ctr: 9.90, conversiones: 0 },
+  { name: 'Qantera - Search', coste: 25067.92, clics: 5448, ctr: 15.74, conversiones: 0 }
+];
+
+const deviceData = [
+  { name: 'Ordenadores', coste: 37904.16, impresiones: 46155, clics: 3317, conversiones: 0 },
+  { name: 'Teléfonos móviles', coste: 174162.93, impresiones: 179261, clics: 32073, conversiones: 0 },
+  { name: 'Tablets', coste: 1289.03, impresiones: 2590, clics: 186, conversiones: 0 },
+  { name: 'Pantallas de TV', coste: 0.0, impresiones: 0, clics: 0, conversiones: 0 }
+];
+
+const dailyImpressionsData = [
+  { Día: 'Domingo', Impresiones: 33752.0 },
+  { Día: 'Lunes', Impresiones: 33257.0 },
+  { Día: 'Martes', Impresiones: 31514.0 },
+  { Día: 'Miércoles', Impresiones: 32266.0 },
+  { Día: 'Jueves', Impresiones: 33659.0 },
+  { Día: 'Viernes', Impresiones: 31116.0 },
+  { Día: 'Sábado', Impresiones: 32442.0 }
+];
+
+
+function App() {
+  // Function to format currency
+  const formatCurrency = (value) => {
+    return `$${value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
+  };
+
+  // Function to handle N/A for 0 conversions
+  const formatCPA = (value, conversions) => {
+    if (conversions === 0) return 'N/A';
+    return formatCurrency(value);
+  };
+
+  // Function to trigger print (PDF export)
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    // Main application container with Tailwind CSS for responsiveness
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-sans">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-xl p-6 sm:p-8">
+        {/* Report Title */}
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+          Reporte de Rendimiento de Google Ads: Arquitectoma
+        </h1>
+        {/* Descriptive subtitle */}
+        <p className="text-lg text-gray-600 text-center mb-8">
+          Análisis del rendimiento de tus campañas utilizando **datos reales agregados** de Enero a Mayo de 2025.
+          <br/>
+          *Nota: Los datos proporcionados no incluyen un desglose mensual de las métricas de rendimiento generales de la cuenta, por lo que las tendencias se presentan en el periodo total.*
+        </p>
+
+        {/* Print/Download PDF Button */}
+        <div className="text-center mb-8 print:hidden"> {/* 'print:hidden' hides the button when printing */}
+          <button
+            onClick={handlePrint}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+          >
+            Descargar como PDF
+          </button>
+        </div>
+
+        {/* Summary for the entire Ene-May 2025 period */}
+        <div className="mb-10 p-6 bg-blue-50 rounded-lg shadow-inner">
+            <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+              Resumen General: {summaryData.name}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[
+                { label: 'Inversión Total', value: summaryData.inversion, format: formatCurrency },
+                { label: 'Impresiones', value: summaryData.impresiones, format: (val) => val.toLocaleString() },
+                { label: 'Clics', value: summaryData.clics, format: (val) => val.toLocaleString() },
+                { label: 'CTR', value: summaryData.ctr, format: (val) => `${val.toFixed(2)}%` },
+                { label: 'CPC', value: summaryData.cpc, format: formatCurrency },
+                { label: 'Conversiones (Leads)', value: summaryData.conversiones, format: (val) => val.toLocaleString() },
+                { label: 'CPA', value: summaryData.cpa, format: (val) => formatCPA(val, summaryData.conversiones) },
+                { label: 'Tasa de Conversión', value: summaryData.tasaConversion, format: (val) => `${val.toFixed(2)}%` },
+              ].map((metric, index) => (
+                <div key={index} className="bg-white p-4 rounded-md shadow-sm">
+                  <p className="text-sm font-medium text-gray-500">{metric.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{metric.format(metric.value)}</p>
+                </div>
+              ))}
+            </div>
+            {summaryData.conversiones === 0 && (
+              <p className="text-red-600 text-center mt-4 text-sm">
+                * Nota: Las conversiones totales para este periodo son 0, lo que hace que el CPA y la Tasa de Conversión no sean aplicables.
+                Por favor, verifica la configuración de seguimiento de conversiones en Google Ads.
+              </p>
+            )}
+          </div>
+
+        {/* Daily Impressions Chart */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Impresiones por Día de la Semana (Ene-May 2025)
+          </h2>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={dailyImpressionsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                <XAxis dataKey="Día" tick={{ fill: '#4a5568' }} />
+                <YAxis tickFormatter={(value) => value.toLocaleString()} tick={{ fill: '#4a5568' }} />
+                <Tooltip formatter={(value, name) => [value.toLocaleString(), 'Impresiones']} />
+                <Legend />
+                <Bar dataKey="Impresiones" fill="#8884d8" name="Impresiones" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Campaign Performance Section */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Rendimiento por Campaña (Total Ene-May 2025)
+          </h2>
+          <div className="overflow-x-auto rounded-lg shadow-md">
+            <table className="min-w-full bg-white border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600 rounded-tl-lg">Campaña</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Coste (MXN)</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Clics</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">CTR</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600 rounded-tr-lg">Conversiones Est.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaignData.map((campaign, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{campaign.name.trim()}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{formatCurrency(campaign.coste)}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{campaign.clics.toLocaleString()}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{campaign.ctr.toFixed(2)}%</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{campaign.conversiones.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Device Performance Section */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Rendimiento por Dispositivo (Total Ene-May 2025)
+          </h2>
+          <div className="overflow-x-auto rounded-lg shadow-md">
+            <table className="min-w-full bg-white border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600 rounded-tl-lg">Dispositivo</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Coste (MXN)</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Impresiones</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600">Clics</th>
+                  <th className="py-3 px-4 border-b border-gray-200 text-left text-sm font-semibold text-gray-600 rounded-tr-lg">Conversiones Est.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deviceData.map((device, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{device.name.trim()}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{formatCurrency(device.coste)}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{device.impresiones.toLocaleString()}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{device.clics.toLocaleString()}</td>
+                    <td className="py-3 px-4 border-b border-gray-200 text-sm text-gray-800">{device.conversiones.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Report Conclusion */}
+        <p className="text-center text-gray-600 text-md mt-10">
+          Este reporte presenta el rendimiento consolidado de tus campañas de Google Ads para Arquitectoma desde el 1 de enero hasta el 31 de mayo de 2025, utilizando los datos proporcionados. Para un análisis de tendencias mensuales más detallado, sería ideal contar con reportes de rendimiento de la cuenta desagregados por mes desde Google Ads.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default App;
